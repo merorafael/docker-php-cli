@@ -37,8 +37,6 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         libmemcached-dev \
         freetds-dev
 
-RUN
-
 # Clean repository
 RUN apt-get clean \
     && rm -rf /var/lib/apt/lists/*
