@@ -1,7 +1,7 @@
 Docker: PHP and extensions
 ==========================
 
-Docker image with PHP and extensions.
+Official [PHP docker image](https://hub.docker.com/_/php/) with additional extensions.
 
 Extensions
 ----------
