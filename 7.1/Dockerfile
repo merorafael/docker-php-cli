@@ -1,4 +1,4 @@
-FROM php:5.6-cli
+FROM php:7.1-cli
 
 # Get repository and install wget and vim
 RUN apt-get update && apt-get install --no-install-recommends -y \
@@ -49,10 +49,11 @@ RUN curl -sS https://getcomposer.org/installer | php -- \
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
-    && echo 'instantclient,/opt/oracle/instantclient_12_1/' | pecl install oci8-2.0.10 \
-    && pecl install apcu-4.0.10 \
-    && pecl install redis-2.2.8 \
-    && pecl install memcached \
+    && echo 'instantclient,/opt/oracle/instantclient_12_1/' | pecl install oci8 \
+    && pecl install redis \
+    && git clone https://github.com/php-memcached-dev/php-memcached /usr/src/php/ext/memcached \
+    && cd /usr/src/php/ext/memcached && git checkout -b php7 origin/php7 \
+    && docker-php-ext-configure memcached \
     && docker-php-ext-configure pdo_oci --with-pdo-oci=instantclient,/opt/oracle/instantclient_12_1,12.1 \
     && docker-php-ext-configure pdo_dblib --with-libdir=/lib/x86_64-linux-gnu \
     && docker-php-ext-install \
@@ -70,14 +71,19 @@ RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-di
             soap \
             sockets \
             zip \
+            memcached \
             pcntl \
             ftp \
     && docker-php-ext-enable \
             oci8 \
-            apcu \
-            memcached \
             redis \
             opcache
+
+# Install APCu and APC backward compatibility
+RUN pecl install apcu \
+    && pecl install apcu_bc-1.0.3 \
+    && docker-php-ext-enable apcu --ini-name 10-docker-php-ext-apcu.ini \
+    && docker-php-ext-enable apc --ini-name 20-docker-php-ext-apc.ini
 
 # Install PHPUnit 5.5
 RUN wget https://phar.phpunit.de/phpunit.phar -O /usr/local/bin/phpunit \
